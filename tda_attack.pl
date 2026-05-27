@@ -1,3 +1,5 @@
+:- module(tda_attack, [createAttack/6, isAttack/1, getAttackCosto/2, getAttackNombre/2, getAttackDesc/2, getAttackDano/2, getAttackPredicado/2]).
+
 :- use_module("funciones_complementarias.pl").
 
 createAttack(Costo, Nombre, Descripcion, Dano, Predicado, ["Ataque", Costo, Nombre, Descripcion, Dano, Predicado]).
@@ -23,3 +25,8 @@ getAttackDano(Ataque, Dano) :-
 
 getAttackPredicado(Ataque, Predicado) :- 
     obtenerposde(5, Ataque, Predicado).
+
+contar_ataques([], 0).
+contar_ataques([_|Resto], Cantidad) :-
+    contar_ataques(Resto, CantResto),
+    Cantidad is CantResto + 1.

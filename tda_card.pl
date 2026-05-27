@@ -1,3 +1,5 @@
+:- module(tda_card, [createEnergyCard/4, createPokemonCard/13, isEnergyCard/1, isPokemonCard/1, isCard/1, getCardType/2, getCardExpansion/2, getCardNumber/2, getCardName/2, getPokemonEvolucionaDe/2, getPokemonHP/2, getPokemonTipo/2, getPokemonDebilidad/2, getPokemonResistencia/2, getPokemonCosteRetirada/2, getPokemonEsEX/2, getPokemonHabilidad/2, getPokemonAtaques/2]).
+
 :- use_module("funciones_complementarias.pl").
 
 tipo("Planta").
@@ -13,12 +15,27 @@ tipo("Incolora").
 tipo("Dragon").
 
 
+tipoTrainer("objeto").
+tipoTrainer("partidario").
+
+
 createEnergyCard(Expansion, Numero, Nombre, Ec) :-
     tipo(Nombre),
     Ec = ["Energia", Expansion, Numero, Nombre].
 
-createPokemonCard(Expansion, Numero, Nombre, HP, TipoPoke, Etapa, Evolucion, ListaAtaques, ["Pokemon", Expansion, Numero, Nombre, HP, TipoPoke, Etapa, Evolucion, ListaAtaques]) :-
-    tipo(TipoPoke).
+createPokemonCard(Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques, ["Pokemon", Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques]) :-
+   tipo(Tipo),
+    Ps > 0,
+    contar_ataques(Ataques, Cantidad),
+    ( 
+        (Habilidad == null, Cantidad =< 3) % no tiene habilidades, entonces tiene max 3ataques
+        ; 
+        (Habilidad \== null, Cantidad =< 2) % tiene habilidad entonces tiene max 2 ataques
+    ).
+
+createTrainerCard(Expansion, Numero, Nombre, Tipo, Texto, PredicadoAsociado, ["Entrenador", Expansion, Numero, Nombre, Tipo, Texto, PredicadoAsociado]) :-
+    tipoTrainer(Tipo).
+
 
 % --------------- PERTENENCIA ----------------
 
@@ -28,10 +45,11 @@ isEnergyCard(["Energia", _, _, Nombre]) :-
 isPokemonCard(["Pokemon", _, _, _, _, TipoPoke, _, _, _]):-
     tipo(TipoPoke).
 
+isTrainerCard(["Entrenador", _, _, _, Tipo, _, _]) :-
+    tipoEntrenador(Tipo). 
+
 isCard(Carta) :-
-    isEnergyCard(Carta).
-isCard(Carta) :-
-    isPokemonCard(Carta).
+    isEnergyCard(Carta); isPokemonCard(Carta) ; isTrainerCard(Carta).
 
 % ----------------- SELECTORES --------------
 
@@ -49,20 +67,39 @@ getCardName(Carta, Nombre) :-
 
 
 
- getPokemonHP(Carta, HP) :-
-    obtenerposde(4, Carta, HP).
+getPokemonEvolucionaDe(Carta, EvolucionaDe) :-
+    obtenerposde(4, Carta, EvolucionaDe).
+
+getPokemonHP(Carta, HP) :-
+    obtenerposde(5, Carta, HP).
+
+getPokemonTipo(Carta, Tipo) :-
+    obtenerposde(6, Carta, Tipo).
+
+getPokemonDebilidad(Carta, Debilidad) :-
+    obtenerposde(7, Carta, Debilidad).
+
+getPokemonResistencia(Carta, Resistencia) :-
+    obtenerposde(8, Carta, Resistencia).
+
+getPokemonCosteRetirada(Carta, CosteRetirada) :-
+    obtenerposde(9, Carta, CosteRetirada).
+
+getPokemonEsEX(Carta, EsEX) :-
+    obtenerposde(10, Carta, EsEX).
+
+getPokemonHabilidad(Carta, Habilidad) :-
+    obtenerposde(11, Carta, Habilidad).
+
+getPokemonAtaques(Carta, Ataques) :-
+    obtenerposde(12, Carta, Ataques).
 
 
-getPokemonTipo(Carta, TipoPoke) :-
-    obtenerposde(5, Carta, TipoPoke).
+getTrainerTipo(Carta, Tipo) :-
+    obtenerposde(4, Carta, Tipo).
 
+getTrainerTexto(Carta, Texto) :-
+    obtenerposde(5, Carta, Texto).
 
-getPokemonEtapa(Carta, Etapa) :-
-    obtenerposde(6, Carta, Etapa).
-
-
-getPokemonEvolucion(Carta, Evolucion) :-
-    obtenerposde(7, Carta, Evolucion).
-
-getPokemonAtaques(Carta, ListaAtaques) :-
-    obtenerposde(8, Carta, ListaAtaques).
+getTrainerPredicado(Carta, Predicado) :-
+    obtenerposde(6, Carta, Predicado).
