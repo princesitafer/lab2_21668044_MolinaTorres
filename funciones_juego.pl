@@ -16,6 +16,21 @@ contar_cartas_por_nombre(NombreBuscado, [Carta|Resto], Cantidad) :-
     ).
 
 
+verificar_limite_copias(_, []).
+
+verificar_limite_copias(MazoCompleto, [Carta|Resto]) :-
+    getCardType(Carta, Tipo),
+    (
+        (Tipo == "Energia", 
+         verificar_limite_copias(MazoCompleto, Resto))
+        ;
+        (Tipo \== "Energia", 
+         getCardName(Carta, Nombre),
+         contar_cartas_por_nombre(Nombre, MazoCompleto, Cantidad),
+         Cantidad =< 4,
+         verificar_limite_copias(MazoCompleto, Resto))
+    ).
+
 
 tiene_pokemon_basico([Carta|_]) :-
     getCardType(Carta, "Pokemon"),
@@ -27,5 +42,6 @@ tiene_pokemon_basico([_|Resto]) :-
 
 
 createDeck(Cartas, ["baraja", Cartas]) :-
-    length(Cartas, 60),                                      
+    length(Cartas, 60),                              
+    verificar_limite_copias(Cartas, Cartas),         
     tiene_pokemon_basico(Cartas).
