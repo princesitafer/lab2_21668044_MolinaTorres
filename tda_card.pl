@@ -1,6 +1,7 @@
-:- module(tda_card, [createEnergyCard/4, createPokemonCard/13, isEnergyCard/1, isPokemonCard/1, isCard/1, getCardType/2, getCardExpansion/2, getCardNumber/2, getCardName/2, getPokemonEvolucionaDe/2, getPokemonHP/2, getPokemonTipo/2, getPokemonDebilidad/2, getPokemonResistencia/2, getPokemonCosteRetirada/2, getPokemonEsEX/2, getPokemonHabilidad/2, getPokemonAtaques/2]).
+:- module(tda_card, [createEnergyCard/4, createPokemonCard/13, createTrainerCard/7, isEnergyCard/1, isPokemonCard/1, isCard/1, getCardType/2, getCardExpansion/2, getCardNumber/2, getCardName/2, getPokemonEvolucionaDe/2, getPokemonHP/2, getPokemonTipo/2, getPokemonDebilidad/2, getPokemonResistencia/2, getPokemonCosteRetirada/2, getPokemonEsEX/2, getPokemonHabilidad/2, getPokemonAtaques/2]).
 
-:- use_module("funciones_complementarias.pl").
+
+:- use_module('funciones_complementarias.pl').
 
 tipo("Planta").
 tipo("Fuego").
@@ -26,7 +27,7 @@ createEnergyCard(Expansion, Numero, Nombre, Ec) :-
 createPokemonCard(Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques, ["Pokemon", Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques]) :-
    tipo(Tipo),
     Ps > 0,
-    contar_ataques(Ataques, Cantidad),
+    length(Ataques, Cantidad),
     ( 
         (Habilidad == null, Cantidad =< 3) % no tiene habilidades, entonces tiene max 3ataques
         ; 
