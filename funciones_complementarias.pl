@@ -77,3 +77,65 @@ mezclar_recursivo(CartasEnMesa, SemillaActual, [CartaElegida | RestoMezclado]) :
     
     sacar_carta_en_posicion(Posicion, CartasEnMesa, CartaElegida, CartasSobrantes),
     mezclar_recursivo(CartasSobrantes, SemillaSiguiente, RestoMezclado).
+
+
+% INIT GAME
+
+% SACA N CARTAS
+robar_cartas(0, Mazo, [], Mazo).
+
+robar_cartas(N, [Carta|RestoMazo], [Carta|RestoRobadas], MazoSalida) :-
+    N > 0,
+    N1 is N - 1,
+    robar_cartas(N1, RestoMazo, RestoRobadas, MazoSalida).
+
+
+% PREPARAR: MEZCLA, SACA 7CARTAS, DEBE HABER UN POKEMON BaSICO Y 6PREMIOS 
+
+preparar_jugador(MazoIni, Semilla, ManoFinal, Premios, MazoFinal, SemillaFinal) :-
+
+    shuffleDeck(["Baraja", MazoIni], Semilla, ["Baraja", MazoMezc]),
+    robar_cartas(7, MazoMezc, ManoTmp, RestoTmp),
+    
+
+    (
+        % caso de que el mazo tenga basico (exitoso y sigue el prox paso)
+        ( tiene_pokemon_basico(ManoTmp),
+          ManoFinal = ManoTmp,                         %confirmar la mano
+          robar_cartas(6, RestoTmp, Premios, MazoFinal), % sacar premios 
+          randomPuro(Semilla, SemillaFinal)                  % nueva semilla para el sgte turno
+        )
+
+        ; % or
+
+        % caso de que el mazo NO tenga basico (volver a mezclar)
+        ( \+ tiene_pokemon_basico(ManoTmp),
+          randomPuro(Semilla, SemillaTemporal),    
+
+          % llamada recursiva con semillatemporal
+          preparar_jugador(MazoIni, SemillaTemporal, ManoFinal, Premios, MazoFinal, SemillaFinal) 
+        )
+    ).
+
+
+%%%%%%%%%% print game
+
+obtener_nombre_carta(["Pokemon", _, _, Nombre | _], Nombre).
+obtener_nombre_carta(["Energia", _, _, Tipo | _], Tipo).
+obtener_nombre_carta(["Entrenador", _, _, Nombre | _], Nombre).
+
+
+% solo se muestran cartas en mano del player que tiene el turno
+formatear_mano(Mano, Turno, Player, StrMano) :-
+    Turno == Player,
+    lista_nombres_a_string(Mano, StrNombres),
+    format(string(StrMano), "Visible: ~w", [StrNombres]).
+
+% si no es el turno del jugador solo se ve la cantidad de cartas
+formatear_mano(Mano, Turno, Player, StrMano) :-
+    Turno \== Player,
+    length(Mano, Cantidad),
+    format(string(StrMano), "Oculta (~w cartas)", [Cantidad]).
+
+
+

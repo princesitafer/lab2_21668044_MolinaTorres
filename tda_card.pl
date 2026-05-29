@@ -43,11 +43,11 @@ createTrainerCard(Expansion, Numero, Nombre, Tipo, Texto, PredicadoAsociado, ["E
 isEnergyCard(["Energia", _, _, Nombre]) :-
     tipo(Nombre).
 
-isPokemonCard(["Pokemon", _, _, _, _, TipoPoke, _, _, _]):-
+isPokemonCard(["Pokemon", _, _, _, _, _, TipoPoke, _, _, _, _, _, _]):-
     tipo(TipoPoke).
 
 isTrainerCard(["Entrenador", _, _, _, Tipo, _, _]) :-
-    tipoEntrenador(Tipo). 
+    tipoTrainer(Tipo).
 
 isCard(Carta) :-
     isEnergyCard(Carta); isPokemonCard(Carta) ; isTrainerCard(Carta).
