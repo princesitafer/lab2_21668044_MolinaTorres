@@ -1,7 +1,7 @@
-:- module(funciones_complementarias, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
-            sacar_carta_en_posicion/4, mezclar_recursivo/3]).
+:- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
+            sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3]).
 
-:- use_module('tda_card.pl').
+:- use_module('tda_card_21668044_MolinaTorres.pl').
 
 
 primero([Primero|_], Primero).
@@ -126,16 +126,53 @@ obtener_nombre_carta(["Entrenador", _, _, Nombre | _], Nombre).
 
 
 % solo se muestran cartas en mano del player que tiene el turno
-formatear_mano(Mano, Turno, Player, StrMano) :-
+texto_mano(Mano, Turno, Player, StrMano) :-
     Turno == Player,
-    lista_nombres_a_string(Mano, StrNombres),
+    nombres_cartas(Mano, StrNombres),
     format(string(StrMano), "Visible: ~w", [StrNombres]).
 
 % si no es el turno del jugador solo se ve la cantidad de cartas
-formatear_mano(Mano, Turno, Player, StrMano) :-
+texto_mano(Mano, Turno, Player, StrMano) :-
     Turno \== Player,
     length(Mano, Cantidad),
     format(string(StrMano), "Oculta (~w cartas)", [Cantidad]).
 
+
+
+nombres_cartas([], "Vacia").
+
+nombres_cartas([Carta], TextoFinal) :-
+    obtener_nombre_carta(Carta, Nombre), 
+    format(string(TextoFinal), "~w", [Nombre]).
+
+nombres_cartas([Carta1, Carta2 | RestoCarta], TextoFinal) :-
+    obtener_nombre_carta(Carta1, Nombre1),
+    nombres_cartas([Carta2 | RestoCarta], TextoResto),
+    format(string(TextoFinal), "~w, ~w", [Nombre1, TextoResto]).
+
+
+% datos de cada pokemon (POR TURNO)
+armar_texto(null, "Ninguno").
+
+armar_texto(["Pokemon", _, _, Nombre, Evolucion, PS, Tipo, Debilidad, Resistencia | _], TextoPoke) :-
+    (Evolucion == null -> Etapa = "Basico" ; Etapa = "Evolucion"),
+
+    format(string(TextoPoke), "~w [~w | ~w] - PS: ~w/~w | Debilidad: ~w | Resistencia: ~w | energia: 0 | Dano: 0 | Estado: Normal",
+           [Nombre, Tipo, Etapa, PS, PS, Debilidad, Resistencia]). % 100/100 DE VIDA, FALTA IMPLEMENTAR LA FUNCION DE DANO PARA que
+                                                                   % SEA FIEL AL FUNCIONAMIENTO DE POKEMON
+
+texto_player(["Jugador", Player, PokeActivo, Banca, Mano, Premios, Mazo, Descarte], Turno, TextoPlayer) :-
+    armar_texto(PokeActivo, TextoActivo),
+    nombres_cartas(Banca, TextoBanca),
+    texto_mano(Mano, Turno, Player, TextoMano),
+    length(Premios, CantPremio),
+    length(Mazo, CantMazo),
+    nombres_cartas(Descarte, TextoDescarte),
+
+    format(string(TextoPlayer),
+        "--- PLAYER ~w ---~nActivo: ~w~nBanca: ~w~nMano: ~w~nPremios: ~w~nMazo: ~w~nDescarte: ~w~n",
+        [Player, TextoActivo, TextoBanca, TextoMano, CantPremio, CantMazo, TextoDescarte]).
+
+        
 
 

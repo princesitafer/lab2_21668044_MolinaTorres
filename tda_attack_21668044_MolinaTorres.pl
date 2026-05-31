@@ -1,6 +1,6 @@
-:- module(tda_attack, [createAttack/6, isAttack/1, getAttackCosto/2, getAttackNombre/2, getAttackDesc/2, getAttackDano/2, getAttackPredicado/2]).
+:- module(tda_attack_21668044_MolinaTorres, [createAttack/6, isAttack/1, getAttackCosto/2, getAttackNombre/2, getAttackDesc/2, getAttackDano/2, getAttackPredicado/2]).
 
-:- use_module('funciones_complementarias.pl').
+:- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
 
 createAttack(Costo, Nombre, Descripcion, Dano, Predicado, ["Ataque", Costo, Nombre, Descripcion, Dano, Predicado]).
 
