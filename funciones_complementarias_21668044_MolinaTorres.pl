@@ -1,5 +1,6 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
-            sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3]).
+            sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 
@@ -121,7 +122,8 @@ preparar_jugador(MazoIni, Semilla, ManoFinal, Premios, MazoFinal, SemillaFinal) 
 %%%%%%%%%% print game
 
 obtener_nombre_carta(["Pokemon", _, _, Nombre | _], Nombre).
-obtener_nombre_carta(["Energia", _, _, Tipo | _], Tipo).
+obtener_nombre_carta(["Energia", _, _, Tipo | _], NombreCarta):-
+    format(string(NombreCarta), "Energia ~w", [Tipo]).
 obtener_nombre_carta(["Entrenador", _, _, Nombre | _], Nombre).
 
 
@@ -129,7 +131,7 @@ obtener_nombre_carta(["Entrenador", _, _, Nombre | _], Nombre).
 texto_mano(Mano, Turno, Player, StrMano) :-
     Turno == Player,
     nombres_cartas(Mano, StrNombres),
-    format(string(StrMano), "Visible: ~w", [StrNombres]).
+    format(string(StrMano), "~w", [StrNombres]).
 
 % si no es el turno del jugador solo se ve la cantidad de cartas
 texto_mano(Mano, Turno, Player, StrMano) :-
@@ -173,6 +175,81 @@ texto_player(["Jugador", Player, PokeActivo, Banca, Mano, Premios, Mazo, Descart
         "--- PLAYER ~w ---~nActivo: ~w~nBanca: ~w~nMano: ~w~nPremios: ~w~nMazo: ~w~nDescarte: ~w~n",
         [Player, TextoActivo, TextoBanca, TextoMano, CantPremio, CantMazo, TextoDescarte]).
 
+
+%%%%% play bench
+
+
+% saca una cartabuscada de la mano 
+sacar_carta_mano(CartaBuscada, [CartaBuscada|Resto], Resto).
+sacar_carta_mano(CartaBuscada, [Carta|Resto], [Carta|Lista]) :-
+    CartaBuscada \== Carta,
+    sacar_carta_mano(CartaBuscada, Resto, Lista).
+
+%agrega pokemon a la banca del jugador de turno
+agregar_banca(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], CartaPoke, ["Jugador", ID, Activo, NuevaBanca, NuevaMano, Premios, Mazo, Descarte]) :-
+    
+ % valida que sea posible que esté en banca (sea pokemon basico)
+    isPokemonCard(CartaPoke),
+    getPokemonEvolucionaDe(CartaPoke, null),
+    
+    %la banca no puede tener 5 o + cartas
+    length(Banca, CantBanca),
+    CantBanca < 5,
+    
+    sacar_carta_mano(CartaPoke, Mano, NuevaMano), % saca de la mano para ir a la lista de banca
+    
+    % mete al pokemon a la banca (inicio de la lista)
+    NuevaBanca = [CartaPoke | Banca].    
+
+
+%%%%%%% activar pokemon
+
+saca_lista(Carta, [Carta|Resto], Resto).
+saca_lista(Carta, [Otro|Resto], [Otro|Nuevoresto]) :-
+    Carta \== Otro,
+    sacar_de_lista(Carta, Resto, Nuevoresto).
+
+
+cambia_poke_activo(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte],
+    CartaBanca, ["Jugador", ID, Nuevoactivo, Nuevabanca, Mano, Premios, Mazo, NuevoDescarte]) :-
+    
+        % validar que sea un pokemon y este en banca
+        isPokemonCard(CartaBanca),
+        saca_lista(CartaBanca, Banca, BancaSinActivo),
+
+        (
+            %caso de que no haya pokemon activo
+            ( Activo == null,
+            Nuevoactivo = CartaBanca,
+            Nuevabanca = BancaSinActivo,
+            NuevoDescarte = Descarte
+            )
+            ;
+            % si hay un pokemon activo (hay que hacer retirada)
+            ( Activo \== null,
+            Nuevoactivo = CartaBanca,
+            
+            %el poke antiguo pasa a estar en la baca
+            Nuevabanca = [Activo | BancaSinActivo],
+            
+            % coste de retirada del poke anterior
+            getPokemonCosteRetirada(Activo, Coste),
+            
+            % aqui faltaria implementar usar carta de energia para ver si es posible la retirada
+            %%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%% arreglar a futuro (faltan implementaciones)
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%
+            NuevoDescarte = Descarte
+            )
+        ).
+
+
+sacar_carta_baraja(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], CartaRobada, 
+    ["Jugador", ID, Activo, Banca, NuevaMano, Premios, NuevoMazo, Descarte]) :-
+
+        %saca 1 carta de la baraja
+        robar_cartas(1, Mazo, [CartaRobada], NuevoMazo),
         
-
-
+        % agrega la carta robada a la mano
+        NuevaMano = [CartaRobada | Mano].
