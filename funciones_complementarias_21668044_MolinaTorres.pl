@@ -1,6 +1,6 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
             sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
-            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3]).
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 
@@ -156,12 +156,30 @@ nombres_cartas([Carta1, Carta2 | RestoCarta], TextoFinal) :-
 % datos de cada pokemon (POR TURNO)
 armar_texto(null, "Ninguno").
 
-armar_texto(["Pokemon", _, _, Nombre, Evolucion, PS, Tipo, Debilidad, Resistencia | _], TextoPoke) :-
+armar_texto(CartaPoke, TextoPoke) :-
+    CartaPoke = ["Pokemon", _, _, Nombre, Evolucion, PS, Tipo, Debilidad, Resistencia | _], %datos a mostrar
     (Evolucion == null -> Etapa = "Basico" ; Etapa = "Evolucion"),
+    
+    length(Base, 13),
+    append(Base, EnergiasPegadas, CartaPoke),
+    
+    length(EnergiasPegadas, CantEnergias),
 
-    format(string(TextoPoke), "~w [~w | ~w] - PS: ~w/~w | Debilidad: ~w | Resistencia: ~w | energia: 0 | Dano: 0 | Estado: Normal",
-           [Nombre, Tipo, Etapa, PS, PS, Debilidad, Resistencia]). % 100/100 DE VIDA, FALTA IMPLEMENTAR LA FUNCION DE DANO PARA que
-                                                                   % SEA FIEL AL FUNCIONAMIENTO DE POKEMON
+    (
+        ( CantEnergias == 0, % caso de que no tenga energias, se muestra 0
+          TextoEnergias = "0" 
+        );
+
+        % ccaso de que el pokemon tenga energias en uso
+        ( CantEnergias > 0, 
+          nombres_cartas(EnergiasPegadas, NombresEnergias),
+          format(string(TextoEnergias), "~w (~w)", [CantEnergias, NombresEnergias])
+        )
+    ),
+    format(string(TextoPoke), "~w [~w | ~w] - PS: ~w/~w | Debilidad: ~w | Resistencia: ~w | energia: ~w | Dano: 0 | Estado: Normal",
+           [Nombre, Tipo, Etapa, PS, PS, Debilidad, Resistencia, TextoEnergias]).% 100/100 DE VIDA, FALTA IMPLEMENTAR LA FUNCION DE DANO PARA que
+                                                                                % SEA FIEL AL FUNCIONAMIENTO DE POKEMON
+                                                                   
 
 texto_player(["Jugador", Player, PokeActivo, Banca, Mano, Premios, Mazo, Descarte], Turno, TextoPlayer) :-
     armar_texto(PokeActivo, TextoActivo),
@@ -207,7 +225,7 @@ agregar_banca(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Car
 saca_lista(Carta, [Carta|Resto], Resto).
 saca_lista(Carta, [Otro|Resto], [Otro|Nuevoresto]) :-
     Carta \== Otro,
-    sacar_de_lista(Carta, Resto, Nuevoresto).
+    saca_lista(Carta, Resto, Nuevoresto).
 
 
 cambia_poke_activo(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte],
@@ -253,3 +271,36 @@ sacar_carta_baraja(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte]
         
         % agrega la carta robada a la mano
         NuevaMano = [CartaRobada | Mano].
+
+
+
+%%%%%%%% usar energia
+
+aplica_energia(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], CartaPoke, 
+    CartaEnergia, ["Jugador", ID, NuevoActivo, NuevaBanca, NuevaMano, Premios, Mazo, Descarte]) :-
+    
+        % verifica que sea una carta de energia y se saca de la mano
+        isEnergyCard(CartaEnergia),
+        sacar_carta_mano(CartaEnergia, Mano, NuevaMano),
+        
+        % verificar que el objetivo sea pokemon
+        CartaPoke = ["Pokemon" | _],
+        
+        % nuevo pokemon con la carta de energia en la lista
+        append(CartaPoke, [CartaEnergia], NuevoPokemon),
+        
+        % busca al pokemon en activo o banca y lo reemplaza 
+        (
+            % caso de que sea pokemon activo
+            ( Activo == CartaPoke,
+            NuevoActivo = NuevoPokemon,
+            NuevaBanca = Banca
+            )
+            ;
+            % pokemon buscado en banca
+            ( Activo \== CartaPoke,
+            saca_lista(CartaPoke, Banca, BancaSinpoke),
+            NuevaBanca = [NuevoPokemon | BancaSinpoke],
+            NuevoActivo = Activo
+            )
+        ).

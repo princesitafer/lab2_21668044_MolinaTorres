@@ -92,3 +92,11 @@ drawCardFromDeck(["Juego", J1, J2, Turno], CartaRobada, JuegoFinal) :-
         )
     ).
 
+
+
+useEnergyCard(["Juego", J1, J2, 1], CartaPoke, CartaEnergia, ["Juego", J1Nuevo, J2, 1]) :-
+    aplica_energia(J1, CartaPoke, CartaEnergia, J1Nuevo).
+
+% caso de que sea el jugador 2
+useEnergyCard(["Juego", J1, J2, 2], CartaPoke, CartaEnergia, ["Juego", J1, J2Nuevo, 2]) :-
+    aplica_energia(J2, CartaPoke, CartaEnergia, J2Nuevo).
