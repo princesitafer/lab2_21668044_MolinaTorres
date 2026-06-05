@@ -1,6 +1,6 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
             sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
-            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4]).
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 
@@ -304,3 +304,37 @@ aplica_energia(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Ca
             NuevoActivo = Activo
             )
         ).
+
+
+evolucionar(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Cartaenjuego, 
+    Cartaevol, ["Jugador", ID, NuevoActivo, NuevaBanca, NuevaMano, Premios, Mazo, Descarte]) :-
+    
+    % verificar que sea una carta y eliminarla de la mano
+    isPokemonCard(Cartaevol),
+    sacar_carta_mano(Cartaevol, Mano, NuevaMano),
+    
+
+    %verificar preevolucion y evolucion comparando nombres
+    Cartaenjuego = ["Pokemon", _, _, Nombre | _],
+
+    getPokemonEvolucionaDe(Cartaevol, Nombre),
+    
+    %pasar energias
+    length(BaseAntigua, 13), % energias del pokemon
+    append(BaseAntigua, EnergiasPegadas, Cartaenjuego),
+    append(Cartaevol, EnergiasPegadas, Nuevopoke), %anade las energias a la carta ya evolucionada
+    
+    (
+        %pokemon a evolucionar esta activo
+        ( Activo == Cartaenjuego,
+          NuevoActivo = Nuevopoke,
+          NuevaBanca = Banca
+        );
+        
+        %poke evolucionar esta en banca
+        ( Activo \== Cartaenjuego,
+          saca_lista(Cartaenjuego, Banca, Bancanueva),
+          NuevaBanca = [Nuevopoke | Bancanueva],
+          NuevoActivo = Activo
+        )
+    ).

@@ -1,5 +1,5 @@
 :- module(funciones_juego_21668044_MolinaTorres, [createDeck/2, shuffleDeck/3, initGame/4, 
-printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3]).
+printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
@@ -100,3 +100,12 @@ useEnergyCard(["Juego", J1, J2, 1], CartaPoke, CartaEnergia, ["Juego", J1Nuevo, 
 % caso de que sea el jugador 2
 useEnergyCard(["Juego", J1, J2, 2], CartaPoke, CartaEnergia, ["Juego", J1, J2Nuevo, 2]) :-
     aplica_energia(J2, CartaPoke, CartaEnergia, J2Nuevo).
+
+
+
+evolvePokemon(["Juego", J1, J2, 1], Cartaenjuego, CartaEvol, ["Juego", J1Nuevo, J2, 1]) :-
+    evolucionar(J1, Cartaenjuego, CartaEvolucion, J1Nuevo).
+
+% caso de que sea el jugador 2
+evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nuevo, 2]) :-
+    evolucionar(J2, Cartaenjuego, CartaEvol, J2Nuevo).
