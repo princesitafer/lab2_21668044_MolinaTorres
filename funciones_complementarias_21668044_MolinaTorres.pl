@@ -1,6 +1,6 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
             sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
-            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4]).
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4, entrenador/3]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 
@@ -330,7 +330,7 @@ evolucionar(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Carta
           NuevoActivo = Nuevopoke,
           NuevaBanca = Banca
         );
-        
+
         %poke evolucionar esta en banca
         ( Activo \== Cartaenjuego,
           saca_lista(Cartaenjuego, Banca, Bancanueva),
@@ -338,3 +338,16 @@ evolucionar(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Carta
           NuevoActivo = Activo
         )
     ).
+
+
+entrenador(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], 
+    CartaEntrenador, ["Jugador", ID, Activo, Banca, NuevaMano, Premios, Mazo, NuevoDescarte]) :-
+    
+        isTrainerCard(CartaEntrenador),
+        sacar_carta_mano(CartaEntrenador, Mano, NuevaMano),
+    
+        NuevoDescarte = [CartaEntrenador | Descarte].
+
+    %%%%%%%%%%%%%%%% falta aplicar efectos de cada carta como pociones, sacar cartas, etc
+    %%%%%%%%%%%%%%%%% arreglar 
+

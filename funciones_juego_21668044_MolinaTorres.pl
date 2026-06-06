@@ -1,5 +1,5 @@
 :- module(funciones_juego_21668044_MolinaTorres, [createDeck/2, shuffleDeck/3, initGame/4, 
-printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4]).
+printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
@@ -109,3 +109,34 @@ evolvePokemon(["Juego", J1, J2, 1], Cartaenjuego, CartaEvol, ["Juego", J1Nuevo, 
 % caso de que sea el jugador 2
 evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nuevo, 2]) :-
     evolucionar(J2, Cartaenjuego, CartaEvol, J2Nuevo).
+
+
+
+   useTrainerCard(["Juego", J1, J2, Turno], CartaTrainer, _Args, Juegofinal) :-
+    
+    getTrainerTexto(CartaTrainer, Texto),
+
+    (
+        ( Turno == 1,
+          entrenador(J1, CartaTrainer, J1Nuevo),
+          Juegoactual = ["Juego", J1Nuevo, J2, Turno]
+        )
+        ;
+        ( Turno == 2,
+          entrenador(J2, CartaTrainer, J2Nuevo),
+          Juegoactual = ["Juego", J1, J2Nuevo, Turno]
+        )
+    ),
+    
+     %aqui se aplica el efecto de la carta
+    (
+        %si no tiene efecto
+        ( Texto == null, 
+          Juegofinal = Juegoactual
+        )
+        ;
+        % arreglar alta aplicar funciones
+        ( Texto \== null,
+          Juegofinal = Juegoactual
+        )
+   ).
