@@ -1,5 +1,5 @@
 :- module(funciones_juego_21668044_MolinaTorres, [createDeck/2, shuffleDeck/3, initGame/4, 
-printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4]).
+printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4, usePokemonAbility/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
@@ -140,3 +140,23 @@ evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nue
           Juegofinal = Juegoactual
         )
    ).
+
+
+usePokemonAbility(["Juego", J1, J2, Turno], CartaPoke, _Args, Juegofinal) :-
+    
+    getPokemonHabilidad(CartaPoke, Habilidad),
+    Juegoactual = ["Juego", J1, J2, Turno],
+
+    (
+ %caso de no tener habilidad
+        ( Habilidad == null, 
+          Juegofinal = Juegoactual
+        )
+        ;
+        %arreglar
+        % falta implementar las habilidades
+        % esperare al script propio o el script de prueba para hacerlo
+        ( Habilidad \== null,
+          Juegofinal = Juegoactual
+        )
+    ).
