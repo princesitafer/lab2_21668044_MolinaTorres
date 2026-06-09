@@ -1,5 +1,5 @@
 :- module(funciones_juego_21668044_MolinaTorres, [createDeck/2, shuffleDeck/3, initGame/4, 
-printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4, usePokemonAbility/4]).
+printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4, usePokemonAbility/4, usePokemonAttack/5]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
@@ -160,3 +160,21 @@ usePokemonAbility(["Juego", J1, J2, Turno], CartaPoke, _Args, Juegofinal) :-
           Juegofinal = Juegoactual
         )
     ).
+
+usePokemonAttack(["Juego", J1, J2, Turno], Cartapoke, Nombreataque, Args, Juegofinal) :-
+   (
+    % caso en que el ataque no sea valido
+    % solo se cmabia el turno
+    ( Nombreataque == null,
+          (
+            ( Turno == 1, 
+              Turnonuevo = 2, 
+              Juegofinal = ["Juego", J1, J2, Turnonuevo]
+            )
+            ;
+            ( Turno == 2, 
+              Turnonuevo = 1, 
+              JuegoFinal = ["Juego", J1, J2, Turnonuevo]
+            )
+          )
+        )).
