@@ -1,6 +1,6 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
             sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
-            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4, entrenador/3]).
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4, entrenador/3, dano_pokemon/4]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
 
@@ -161,7 +161,7 @@ armar_texto(CartaPoke, TextoPoke) :-
     (Evolucion == null -> Etapa = "Basico" ; Etapa = "Evolucion"),
     
     length(Base, 13),
-    append(Base, EnergiasPegadas, CartaPoke),
+    append(Base, [Dano, Estado | EnergiasPegadas], CartaPoke),
     
     length(EnergiasPegadas, CantEnergias),
 
@@ -176,9 +176,10 @@ armar_texto(CartaPoke, TextoPoke) :-
           format(string(TextoEnergias), "~w (~w)", [CantEnergias, NombresEnergias])
         )
     ),
-    format(string(TextoPoke), "~w [~w | ~w] - PS: ~w/~w | Debilidad: ~w | Resistencia: ~w | energia: ~w | Dano: 0 | Estado: Normal",
-           [Nombre, Tipo, Etapa, PS, PS, Debilidad, Resistencia, TextoEnergias]).% 100/100 DE VIDA, FALTA IMPLEMENTAR LA FUNCION DE DANO PARA que
-                                                                                % SEA FIEL AL FUNCIONAMIENTO DE POKEMON
+    PSactual is PS - Dano,
+    format(string(TextoPoke), "~w [~w | ~w] - PS: ~w/~w | Debilidad: ~w | Resistencia: ~w | energia: ~w | Dano: ~w | Estado: ~w",
+           [Nombre, Tipo, Etapa, PSactual, PS, Debilidad, Resistencia, TextoEnergias, Dano, Estado]).
+
                                                                    
 
 texto_player(["Jugador", Player, PokeActivo, Banca, Mano, Premios, Mazo, Descarte], Turno, TextoPlayer) :-
@@ -215,7 +216,8 @@ agregar_banca(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Car
     CantBanca < 5,
     
     sacar_carta_mano(CartaPoke, Mano, NuevaMano), % saca de la mano para ir a la lista de banca
-    
+    append(CartaPoke, [0, "Normal"], CartaEnJuego), % mete la carta en juego con dano 0 y sin estados
+
     % mete al pokemon a la banca (inicio de la lista)
     NuevaBanca = [CartaPoke | Banca].    
 
@@ -351,3 +353,30 @@ entrenador(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte],
     %%%%%%%%%%%%%%%% falta aplicar efectos de cada carta como pociones, sacar cartas, etc
     %%%%%%%%%%%%%%%%% arreglar 
 
+
+
+dano_pokemon(Jugadorrival, Jugadoractual, Jugadorrivalsalida, Jugadoractualsalida) :-
+    Jugadorrival = ["Jugador", Idrival, Activorival, Bancarival, Manorival, Premiosrival, Mazorival, Descarterival],
+    
+    ((
+            ( Activorival == null )
+            ;
+            ( Activorival \== null,
+              length(Base, 13),
+              append(Base, [Dano, _Estado | _Energias], Activorival),
+              Base = ["Pokemon", _, _, _, _, PS | _],
+              Dano < PS
+            )
+        ),
+        
+        %pokemon sobrevivio por lo que se retorna 
+        Jugadorrivalsalida = Jugadorrival,
+        Jugadoractualsalida = Jugadoractual
+        
+        ; 
+         (Activorival \== null,
+            length(Base, 13),
+            append(Base, [Dano, _Estado | _Energias], Activorival),
+            Base = ["Pokemon", _, _, _, _, PS, _, _, _, _, EsEX | _],
+            Dano >= PS),
+    ).

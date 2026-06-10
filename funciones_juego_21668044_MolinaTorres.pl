@@ -104,7 +104,7 @@ useEnergyCard(["Juego", J1, J2, 2], CartaPoke, CartaEnergia, ["Juego", J1, J2Nue
 
 
 evolvePokemon(["Juego", J1, J2, 1], Cartaenjuego, CartaEvol, ["Juego", J1Nuevo, J2, 1]) :-
-    evolucionar(J1, Cartaenjuego, CartaEvolucion, J1Nuevo).
+    evolucionar(J1, Cartaenjuego, CartaEvol, J1Nuevo).
 
 % caso de que sea el jugador 2
 evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nuevo, 2]) :-
