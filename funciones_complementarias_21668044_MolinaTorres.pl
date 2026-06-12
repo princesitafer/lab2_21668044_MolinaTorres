@@ -379,4 +379,9 @@ dano_pokemon(Jugadorrival, Jugadoractual, Jugadorrivalsalida, Jugadoractualsalid
             append(Base, [Dano, _Estado | _Energias], Activorival),
             Base = ["Pokemon", _, _, _, _, PS, _, _, _, _, EsEX | _],
             Dano >= PS),
+
+%caso en que el pokemon muera
+        Nuevoactivorival = null,
+        Nuevodescarterival = [Activorival | Descarterival],
+        Jugadorrivalsalida = ["Jugador", Idrival, Nuevoactivorival, Bancarival, Manorival, Premiosrival, Mazorival, Nuevodescarterival],
     ).
