@@ -384,4 +384,16 @@ dano_pokemon(Jugadorrival, Jugadoractual, Jugadorrivalsalida, Jugadoractualsalid
         Nuevoactivorival = null,
         Nuevodescarterival = [Activorival | Descarterival],
         Jugadorrivalsalida = ["Jugador", Idrival, Nuevoactivorival, Bancarival, Manorival, Premiosrival, Mazorival, Nuevodescarterival],
+
+%reclama premios
+Jugadoractual = ["Jugador", IdActual, ActivoActual, BancaActual, ManoActual, PremiosActual, MazoActual, DescarteActual],
+        (
+            (EsEX == true, CantidadPremios = 2)
+            ;
+            (EsEX == false, CantidadPremios = 1)
+        ),
+        
+        robar_cartas(CantidadPremios, PremiosActual, PremiosRobados, NuevosPremiosActual),
+        append(PremiosRobados, ManoActual, NuevaManoActual),
+        Jugadoractualsalida = ["Jugador", IdActual, ActivoActual, BancaActual, NuevaManoActual, NuevosPremiosActual, MazoActual, DescarteActual]
     ).
