@@ -177,4 +177,73 @@ usePokemonAttack(["Juego", J1, J2, Turno], Cartapoke, Nombreataque, Args, Juegof
               JuegoFinal = ["Juego", J1, J2, Turnonuevo]
             )
           )
+    )
+        ;
+
+         % caso en el cual el jugador 1 ataca
+        ( Nombreataque \== null, 
+          (
+            ( Turno == 1,
+              J1Atacante = J1,
+              J2Atacado = J2,
+              
+              % danos y premios 
+              dano_pokemon(J2Atacado, J1Atacante, J2Final, J1final),
+              
+              %estados despues del ataque
+              J1final = ["Jugador", Id1, Activo1, Banca1, Mano1, Premios1, Mazo1, Descarte1],
+              J2final = ["Jugador", Id2, Activo2, Banca2, Mano2, Premios2, Mazo2, Descarte2],
+              
+              (
+                  %caso en el q jugador 1 se quede sin premios (gana)
+                  ( Premios1 == [],
+                    Juegofinal = ["JuegoTermino", "Jugador 1 ha ganado la partida por premios."]
+                  )
+                  ;
+                  %caso en que j1 derrote 1 pokemon
+                  % y al otro jugador no le queden ni activos ni en banca
+                  ( Activo2 == null, Banca2 == [],
+                    Juegofinal = ["JuegoTermino", "Jugador 1 ha ganado porque jugador 2 no tiene pokemon."]
+                  )
+                  ;
+                  % juego sigue normal
+                  ( Premios1 \== [],
+                    (Activo2 \== null ; Banca2 \== []),
+                    Turnonuevo = 2,
+                    Juegofinal = ["Juego", J1Final, J2Final, Turnonuevo]
+                  )
+              )
+            )
+            ;
+            % JUGADOR 2 ataca 
+
+            ( Turno == 2,
+              J2Atacante = J2,
+              J1Atacado = J1,
+              
+              % danos y premios
+              dano_pokemon(J1Atacado, J2Atacante, J1Final, J2Final),
+              
+              % estados con los cambios
+              J1Final = ["Jugador", Id1, Activo1, Banca1, Mano1, Premios1, Mazo1, Descarte1],
+              J2Final = ["Jugador", Id2, Activo2, Banca2, Mano2, Premios2, Mazo2, Descarte2],
+              
+              (
+                  ( Premios2 == [],
+                    Juegofinal = ["JuegoTermino", "Jugador 2 ha ganado la partida por premios."]
+                  )
+                  ;
+                  ( Activo1 == null, Banca1 == [],
+                    Juegofinal = ["JuegoTermino", "Jugador 2 ha ganado porque jugador 1 no tiene Pokemon."]
+                  )
+                  ;
+                  %juego sigue normal
+                  ( Premios2 \== [],
+                    (Activo1 \== null ; Banca1 \== []),
+                    Turnonuevo = 1,
+                    Juegofinal = ["Juego", J1Final, J2Final, Turnonuevo]
+                  )
+              )
+            )
+          )
         )).
