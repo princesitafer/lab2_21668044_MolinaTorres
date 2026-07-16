@@ -2,6 +2,7 @@
 printGame/2, playToBench/3, changeActivePokemon/3, drawCardFromDeck/3, evolvePokemon/4, useTrainerCard/4, usePokemonAbility/4, usePokemonAttack/5]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
+:- use_module('tda_attack_21668044_MolinaTorres.pl').
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
 
 
@@ -112,9 +113,10 @@ evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nue
 
 
 
-   useTrainerCard(["Juego", J1, J2, Turno], CartaTrainer, _Args, Juegofinal) :-
+   useTrainerCard(["Juego", J1, J2, Turno], CartaTrainer, Args, Juegofinal) :-
     
     getTrainerTexto(CartaTrainer, Texto),
+    getTrainerPredicado(CartaTrainer, Predicado),
 
     (
         ( Turno == 1,
@@ -135,9 +137,47 @@ evolvePokemon(["Juego", J1, J2, 2], CartaEnJuego, CartaEvol, ["Juego", J1, J2Nue
           Juegofinal = Juegoactual
         )
         ;
-        % arreglar alta aplicar funciones
+        
+        % efectos (solo he aplicado pocion y profesor oak hasta el momento)
         ( Texto \== null,
-          Juegofinal = Juegoactual
+          Juegoactual = ["Juego", J1Actual, J2Actual, Turno],
+          (
+              %cura al pokemon indico +20ps
+              ( Predicado == curar_pocion,
+                Args = [CartaPoke],
+                (
+                    ( Turno == 1,
+                      aplica_pocion(J1Actual, CartaPoke, 20, J1Final),
+                      Juegofinal = ["Juego", J1Final, J2Actual, Turno]
+                    )
+                    ;
+                    ( Turno == 2,
+                      aplica_pocion(J2Actual, CartaPoke, 20, J2Final),
+                      Juegofinal = ["Juego", J1Actual, J2Final, Turno]
+                    )
+                )
+              )
+              ;
+              %profesor oak descarta la mano y roba 7 cartas nuevas
+              ( Predicado == profesor_oak,
+                (
+                    ( Turno == 1,
+                      profesor_oak(J1Actual, J1Final),
+                      Juegofinal = ["Juego", J1Final, J2Actual, Turno]
+                    )
+                    ;
+                    ( Turno == 2,
+                      profesor_oak(J2Actual, J2Final),
+                      Juegofinal = ["Juego", J1Actual, J2Final, Turno]
+                    )
+                )
+              )
+              ;
+              % otros predicados x implementar
+              ( Predicado \== curar_pocion, Predicado \== profesor_oak,
+                Juegofinal = Juegoactual
+              )
+          )
         )
    ).
 
@@ -155,7 +195,6 @@ usePokemonAbility(["Juego", J1, J2, Turno], CartaPoke, _Args, Juegofinal) :-
         ;
         %arreglar
         % falta implementar las habilidades
-        % esperare al script propio o el script de prueba para hacerlo
         ( Habilidad \== null,
           Juegofinal = Juegoactual
         )
@@ -174,25 +213,31 @@ usePokemonAttack(["Juego", J1, J2, Turno], Cartapoke, Nombreataque, Args, Juegof
             ;
             ( Turno == 2, 
               Turnonuevo = 1, 
-              JuegoFinal = ["Juego", J1, J2, Turnonuevo]
+              Juegofinal = ["Juego", J1, J2, Turnonuevo]
             )
           )
     )
         ;
 
-         % caso en el cual el jugador 1 ataca
         ( Nombreataque \== null, 
+          
+          %se busca el ataque para saber el dano
+          getPokemonAtaques(Cartapoke, Ataques),
+          buscar_ataque(Ataques, Nombreataque, AtaqueUsado),
+          getAttackDano(AtaqueUsado, DanoAtaque), 
+
           (
+            % caso en el cual el jugador 1 ataca
             ( Turno == 1,
               J1Atacante = J1,
               J2Atacado = J2,
               
               % danos y premios 
-              dano_pokemon(J2Atacado, J1Atacante, J2Final, J1final),
+              dano_pokemon(J2Atacado, J1Atacante, DanoAtaque, J2Final, J1Final),
               
               %estados despues del ataque
-              J1final = ["Jugador", Id1, Activo1, Banca1, Mano1, Premios1, Mazo1, Descarte1],
-              J2final = ["Jugador", Id2, Activo2, Banca2, Mano2, Premios2, Mazo2, Descarte2],
+              J1Final = ["Jugador", Id1, Activo1, Banca1, Mano1, Premios1, Mazo1, Descarte1],
+              J2Final = ["Jugador", Id2, Activo2, Banca2, Mano2, Premios2, Mazo2, Descarte2],
               
               (
                   %caso en el q jugador 1 se quede sin premios (gana)
@@ -222,7 +267,7 @@ usePokemonAttack(["Juego", J1, J2, Turno], Cartapoke, Nombreataque, Args, Juegof
               J1Atacado = J1,
               
               % danos y premios
-              dano_pokemon(J1Atacado, J2Atacante, J1Final, J2Final),
+              dano_pokemon(J1Atacado, J2Atacante, DanoAtaque, J1Final, J2Final),
               
               % estados con los cambios
               J1Final = ["Jugador", Id1, Activo1, Banca1, Mano1, Premios1, Mazo1, Descarte1],

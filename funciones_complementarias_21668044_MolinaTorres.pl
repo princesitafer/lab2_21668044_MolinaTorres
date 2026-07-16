@@ -1,8 +1,10 @@
 :- module(funciones_complementarias_21668044_MolinaTorres, [obtenerposde/3, contar_cartas_por_nombre/3, verificar_limite_copias/2, tiene_pokemon_basico/1,
             sacar_carta_en_posicion/4, mezclar_recursivo/3, robar_cartas/4, preparar_jugador/6, randomPuro/2, texto_player/3, sacar_carta_mano/3, agregar_banca/3,
-            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4, entrenador/3, dano_pokemon/4]).
+            saca_lista/3, cambia_poke_activo/3, sacar_carta_baraja/3, aplica_energia/4, evolucionar/4, entrenador/3, dano_pokemon/5, buscar_ataque/3,
+            curar_pokemon/3, aplica_pocion/4, profesor_oak/2]).
 
 :- use_module('tda_card_21668044_MolinaTorres.pl').
+:- use_module('tda_attack_21668044_MolinaTorres.pl').
 
 
 primero([Primero|_], Primero).
@@ -90,6 +92,12 @@ robar_cartas(N, [Carta|RestoMazo], [Carta|RestoRobadas], MazoSalida) :-
     N1 is N - 1,
     robar_cartas(N1, RestoMazo, RestoRobadas, MazoSalida).
 
+%func la cual se pidan robar cartas pero no queda tal num
+% para que robe las que queden en vez de false
+robar_hasta(N, Mazo, Robadas, MazoSalida) :-
+    length(Mazo, Cantidad),
+    ( Cantidad >= N -> CantidadRobar = N ; CantidadRobar = Cantidad ),
+    robar_cartas(CantidadRobar, Mazo, Robadas, MazoSalida).
 
 % PREPARAR: MEZCLA, SACA 7CARTAS, DEBE HABER UN POKEMON BaSICO Y 6PREMIOS 
 
@@ -219,7 +227,7 @@ agregar_banca(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Car
     append(CartaPoke, [0, "Normal"], CartaEnJuego), % mete la carta en juego con dano 0 y sin estados
 
     % mete al pokemon a la banca (inicio de la lista)
-    NuevaBanca = [CartaPoke | Banca].    
+    NuevaBanca = [CartaEnJuego | Banca].    
 
 
 %%%%%%% activar pokemon
@@ -342,6 +350,54 @@ evolucionar(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], Carta
     ).
 
 
+%func busca ataque por nombre en la lista de ataques de un pokemon
+
+buscar_ataque([Ataque|_], Nombre, Ataque) :-
+    getAttackNombre(Ataque, Nombre).
+
+buscar_ataque([Ataque|Resto], Nombre, AtaqueEncontrado) :-
+    getAttackNombre(Ataque, NombreAtaque),
+    Nombre \== NombreAtaque,
+    buscar_ataque(Resto, Nombre, AtaqueEncontrado).
+
+%%%%%%%% efectos de cartas entrenador
+
+% cura danio a una carta en juego
+curar_pokemon(CartaPokemon, Cantidad, CartaPokemonCurada) :-
+    length(Base, 13),
+    append(Base, [Dano, Estado | EnergiasPegadas], CartaPokemon),
+    DanoCurado is max(0, Dano - Cantidad),
+    append(Base, [DanoCurado, Estado | EnergiasPegadas], CartaPokemonCurada).
+
+
+% cura ps a la carta (activa o en banca) del jugador
+aplica_pocion(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], CartaPoke, Cantidad,
+    ["Jugador", ID, NuevoActivo, NuevaBanca, Mano, Premios, Mazo, Descarte]) :-
+
+        curar_pokemon(CartaPoke, Cantidad, CartaCurada),
+
+        (
+            ( Activo == CartaPoke,
+              NuevoActivo = CartaCurada,
+              NuevaBanca = Banca
+            )
+            ;
+            ( Activo \== CartaPoke,
+              saca_lista(CartaPoke, Banca, BancaSinCarta),
+              NuevaBanca = [CartaCurada | BancaSinCarta],
+              NuevoActivo = Activo
+            )
+        ).
+
+
+% descarta toda la mano actual y roba 7 cartas nuevas del mazo
+profesor_oak(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte],
+    ["Jugador", ID, Activo, Banca, ManoNueva, Premios, MazoNuevo, DescarteNuevo]) :-
+
+        append(Mano, Descarte, DescarteNuevo),
+        robar_hasta(7, Mazo, ManoNueva, MazoNuevo).
+
+
 entrenador(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte], 
     CartaEntrenador, ["Jugador", ID, Activo, Banca, NuevaMano, Premios, Mazo, NuevoDescarte]) :-
     
@@ -355,45 +411,48 @@ entrenador(["Jugador", ID, Activo, Banca, Mano, Premios, Mazo, Descarte],
 
 
 
-dano_pokemon(Jugadorrival, Jugadoractual, Jugadorrivalsalida, Jugadoractualsalida) :-
+
+dano_pokemon(Jugadorrival, Jugadoractual,DanoAtaque, Jugadorrivalsalida, Jugadoractualsalida) :-
     Jugadorrival = ["Jugador", Idrival, Activorival, Bancarival, Manorival, Premiosrival, Mazorival, Descarterival],
     
-    ((
-            ( Activorival == null )
-            ;
-            ( Activorival \== null,
-              length(Base, 13),
-              append(Base, [Dano, _Estado | _Energias], Activorival),
-              Base = ["Pokemon", _, _, _, _, PS | _],
-              Dano < PS
-            )
-        ),
-        
-        %pokemon sobrevivio por lo que se retorna 
-        Jugadorrivalsalida = Jugadorrival,
-        Jugadoractualsalida = Jugadoractual
-        
-        ; 
-         (Activorival \== null,
-            length(Base, 13),
-            append(Base, [Dano, _Estado | _Energias], Activorival),
-            Base = ["Pokemon", _, _, _, _, PS, _, _, _, _, EsEX | _],
-            Dano >= PS),
+    ( 
+        % caso que el rival no tenga pokemon activo (evitar bug)
+        ( Activorival == null,
+          Jugadorrivalsalida = Jugadorrival,
+          Jugadoractualsalida = Jugadoractual
+        )
+        ;
+        ( Activorival \== null,
+          length(Base, 13),
+          append(Base, [DanoAcumulado, Estado | Energias], Activorival),
+          DanoNuevo is DanoAcumulado + DanoAtaque,
+          Base = ["Pokemon", _, _, _, _, PS, _, _, _, _, EsEX | _],
+          (
+              %pokemon sobrevive entonces hay que actulizar sus ps
+              ( DanoNuevo < PS,
+                append(Base, [DanoNuevo, Estado | Energias], ActivorivalNuevo),
+                Jugadorrivalsalida = ["Jugador", Idrival, ActivorivalNuevo, Bancarival, Manorival, Premiosrival, Mazorival, Descarterival],
+                Jugadoractualsalida = Jugadoractual
+              )
+              ;
+              %si el pokemon muere la carta tiene que ser descartada y se sacan premios
+              
+              ( DanoNuevo >= PS,
+                append(Base, [DanoNuevo, Estado | Energias], ActivorivalMuerto),
+                Nuevodescarterival = [ActivorivalMuerto | Descarterival],
+                Jugadorrivalsalida = ["Jugador", Idrival, null, Bancarival, Manorival, Premiosrival, Mazorival, Nuevodescarterival],
 
-%caso en que el pokemon muera
-        Nuevoactivorival = null,
-        Nuevodescarterival = [Activorival | Descarterival],
-        Jugadorrivalsalida = ["Jugador", Idrival, Nuevoactivorival, Bancarival, Manorival, Premiosrival, Mazorival, Nuevodescarterival],
+                Jugadoractual = ["Jugador", IdActual, ActivoActual, BancaActual, ManoActual, PremiosActual, MazoActual, DescarteActual],
+                (
+                    (EsEX == true, CantidadPremios = 2)
+                    ;
+                    (EsEX == false, CantidadPremios = 1)
+                ),
 
-%reclama premios
-Jugadoractual = ["Jugador", IdActual, ActivoActual, BancaActual, ManoActual, PremiosActual, MazoActual, DescarteActual],
-        (
-            (EsEX == true, CantidadPremios = 2)
-            ;
-            (EsEX == false, CantidadPremios = 1)
-        ),
-        
-        robar_cartas(CantidadPremios, PremiosActual, PremiosRobados, NuevosPremiosActual),
-        append(PremiosRobados, ManoActual, NuevaManoActual),
-        Jugadoractualsalida = ["Jugador", IdActual, ActivoActual, BancaActual, NuevaManoActual, NuevosPremiosActual, MazoActual, DescarteActual]
+                robar_hasta(CantidadPremios, PremiosActual, PremiosRobados, NuevosPremiosActual),
+                append(PremiosRobados, ManoActual, NuevaManoActual),
+                Jugadoractualsalida = ["Jugador", IdActual, ActivoActual, BancaActual, NuevaManoActual, NuevosPremiosActual, MazoActual, DescarteActual]
+              )
+          )
+        )
     ).
