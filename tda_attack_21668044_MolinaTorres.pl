@@ -2,10 +2,27 @@
 
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
 
+
+% createAttack/6
+%construye una lista con datos de ataque asociados a un pokemon
+%  entrada: Costo, Nombre, Descripcion, Dano, Predicado, LISTA.
+% SALIDa: lista con datos del ataque
+
 createAttack(Costo, Nombre, Descripcion, Dano, Predicado, ["Ataque", Costo, Nombre, Descripcion, Dano, Predicado]).
 
+
+
+%isAttack/1
+% verifica si es un ataque valido
+% entrada: lista
+% salida: booleano
 isAttack(["Ataque", _, _, _, _, _]).
 
+
+% Predicados: getAttack---/2
+% selectores para extraer atributos especificos de un ataque.
+%entrada: Ataque, valor_buscado
+%salida: valor del atributo buscado
 
 getAttackCosto(Ataque, Costo) :- 
     obtenerposde(1, Ataque, Costo).

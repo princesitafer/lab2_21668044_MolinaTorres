@@ -2,6 +2,11 @@
 
 :- use_module('funciones_complementarias_21668044_MolinaTorres.pl').
 
+% tipo/1
+% Hechos que enumeras lo tipos validos que puede tener un pokemon o energias
+% base de conocimiento
+% Entrada: atomo que representa el nombre del tipo (planta, fuego)
+% Recorrido: BOOL, true si es valido, false en otro caso
 tipo("Planta").
 tipo("Fuego").
 tipo("Agua").
@@ -14,15 +19,30 @@ tipo("Hada").
 tipo("Incolora").
 tipo("Dragon").
 
-
+% tipoTrainer/1
+% define el dominio de tipos de cartas de entrenador validos
+% Hechos/base de conocimientos
+% Dominio: atomo que representa el tipo (objeto/partidario)
+% Recorrido: booleano
 tipoTrainer("objeto").
 tipoTrainer("partidario").
 
 
+%createEnergyCard/4
+% constructorcarta de energia
+% valida y construye el tda de carta
+% entrada: expansion, Numero, Nombre, id.
+% salidaestructura ["Energia", Expansion, Numero, Nombre].
 createEnergyCard(Expansion, Numero, Nombre, Ec) :-
     tipo(Nombre),
     Ec = ["Energia", Expansion, Numero, Nombre].
 
+
+% createPokemonCard/14
+% constructor de una carta pokemon
+% valida reglas y datos de un pokemon
+% entrada: expansion, nombre, HP, tipos, ataques, debilidad, resistencia ..
+%salida estructura ["Pokemon", Expansion, ...]
 createPokemonCard(Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques, ["Pokemon", Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, Resistencia, CosteRetirada, EsEX, Habilidad, Ataques]) :-
    tipo(Tipo),
     Ps > 0,
@@ -33,11 +53,23 @@ createPokemonCard(Expansion, Numero, Nombre, EvolucionaDe, Ps, Tipo, Debilidad, 
         (Habilidad \== null, Cantidad =< 2) % tiene habilidad entonces tiene max 2 ataques
     ).
 
+
+% createTrainerCard/7
+% constructor de carta entrenador.
+% valida carta de entrenador
+% entrada: expansion, Numero, Nombre, Tipo, Texto, predicadoAsociado, resultado.
+% salida: Estructura ["Entrenador", Expansion, ...]
 createTrainerCard(Expansion, Numero, Nombre, Tipo, Texto, PredicadoAsociado, ["Entrenador", Expansion, Numero, Nombre, Tipo, Texto, PredicadoAsociado]) :-
     tipoTrainer(Tipo).
 
 
 % --------------- PERTENENCIA ----------------
+
+
+% isEnergyCard/1, isPokemonCard/1, isTrainerCard/1, isCard/1
+% verifican si una lista cumple con la estructura y tipos para ser una carta valida
+%entrada: lista
+% salida: bool
 
 isEnergyCard(["Energia", _, _, Nombre]) :-
     tipo(Nombre).
@@ -51,7 +83,14 @@ isTrainerCard(["Entrenador", _, _, _, Tipo, _, _]) :-
 isCard(Carta) :-
     isEnergyCard(Carta); isPokemonCard(Carta) ; isTrainerCard(Carta).
 
+
 % ----------------- SELECTORES --------------
+
+% getCard/2, getPokemon/2, getTrainer/2
+% extraen un atributo especifico de una carta dependiende de su posicion
+%entrada: carta, atributo_a_sacar
+%salida: valor del atributo a buscar
+
 
 getCardType(Carta, Tipo) :- 
     obtenerposde(0, Carta, Tipo).
@@ -64,7 +103,6 @@ getCardNumber(Carta, Numero) :-
 
 getCardName(Carta, Nombre) :- 
     obtenerposde(3, Carta, Nombre).
-
 
 
 getPokemonEvolucionaDe(Carta, EvolucionaDe) :-
