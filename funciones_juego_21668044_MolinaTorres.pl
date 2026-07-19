@@ -337,7 +337,6 @@ usePokemonAbility(["Juego", J1, J2, Turno, EU], CartaPoke, _Args, Juegofinal) :-
           Juegofinal = Juegoactual
         )
     ).
-    ).
 
 % usePokemonAttack/5 | Objetivo: Ejecuta ataque y finaliza turno.
 % valida si es un ataque valido, existente y posible por las energias, si lo es se ejecuta su logica y resultados 
